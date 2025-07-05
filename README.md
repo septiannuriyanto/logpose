@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🏅 Achievement Titles & Criteria
 
-## Getting Started
+## 🦉 Berdasarkan Waktu Kerja
 
-First, run the development server:
+| Julukan           | Kriteria                                                                 |
+|-------------------|--------------------------------------------------------------------------|
+| 🌙 **Night Owl**  | Sering kerja lewat jam 10 malam atau dominan log waktu di malam hari     |
+| ☀️ **Early Bird** | Rajin mulai kerja sebelum jam 7 pagi                                     |
+| 🕒 **Time Keeper**| Log waktu secara konsisten setiap hari selama minimal 7 hari berturut-turut |
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🏆 Berdasarkan Produktivitas
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Julukan               | Kriteria                                                               |
+|------------------------|------------------------------------------------------------------------|
+| 🐅 **Tiger Getter**     | Task besar (>5 jam) dan selesai tanpa jeda panjang                    |
+| 🚀 **The Finisher**     | Selesaikan semua task mingguan tanpa tertunda                        |
+| ⛰️ **Peak Performer**   | Waktu kerja terbanyak di tim bulan ini                                |
+| 🔁 **Streak Master**    | Logging tanpa putus selama 14 hari atau lebih                        |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 🧠 Berdasarkan Pola Kerja
 
-To learn more about Next.js, take a look at the following resources:
+| Julukan               | Kriteria                                                                 |
+|------------------------|--------------------------------------------------------------------------|
+| 🧩 **Task Ninja**       | Menyelesaikan banyak task kecil dengan efisien (<1 jam/task)             |
+| 🧘 **Zen Logger**       | Tidak pernah force stop timer, selalu log dengan tenang                  |
+| 🐢 **Slow But Steady**  | Rata-rata kerja <2 jam/hari tapi selalu log setiap hari                  |
+| 🎯 **Focus Sniper**     | Tidak pernah multitasking, selalu 1 task aktif dengan durasi ideal       |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎉 Fun & Kocak
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Julukan               | Kriteria                                                                 |
+|------------------------|--------------------------------------------------------------------------|
+| 📅 **Mr./Ms. Deadline** | Sering log waktu mepet deadline project                                 |
+| 💻 **AFK Lord**         | Timer aktif >3 jam tapi task cuma selesai 15 menit 😅                    |
+| 🎩 **Task Magician**    | Task panjang banget tapi selesai dalam waktu pendek                     |
+| 🔋 **Full Charged**     | Hari Senin langsung log 8 jam penuh 🔋                                   |
