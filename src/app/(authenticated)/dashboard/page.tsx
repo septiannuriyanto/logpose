@@ -1,16 +1,21 @@
+
+'use client';
 import { getUserAchievements } from "@/lib/achievement-utils";
 import { mockStats } from "@/lib/mock-stats";
 import React from "react";
+import { useAuth } from "../authContext";
 
 
 const userAchievements = getUserAchievements(mockStats);
 
 export default function DashboardPage() {
+  const { profile } = useAuth();
+  const displayName = profile?.first_name || "there";
   return (
-    <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6">
       {/* Welcome Pane with Rank Achievement */}
       <div className="bg-white rounded-2xl shadow p-6">
-        <h1 className="text-2xl font-bold mb-2">Welcome back, Septian 👋</h1>
+        <h1 className="text-2xl font-bold mb-2">Hello, {displayName} 👋</h1>
         <p className="text-gray-600 mb-4">Great work last month! Here's how you performed:</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="bg-teal-50 border-l-4 border-teal-500 p-4 rounded-xl">

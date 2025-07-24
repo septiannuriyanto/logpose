@@ -1,40 +1,65 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils' // optional, bisa diganti manual kalau tidak pakai `cn`
+import { usePathname, useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { supabase } from '@/lib/supabaseClient'
+import { useAuth } from '@/app/(authenticated)/authContext'
 
 export const Sidebar = () => {
   const pathname = usePathname()
+  const router = useRouter()
+  const { user } = useAuth()
 
   const navItems = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'History', href: '/history' },
+    { label: 'Schedule', href: '/schedule' },
     { label: 'Teams', href: '/teams' },
+    { label: 'Reports', href: '/reports' },
     { label: 'Settings', href: '/settings' },
   ]
 
-  return (
-    <aside className="w-64 bg-gray-800 border-r min-h-screen p-4 shadow-sm">
-      <div className="text-2xl font-bold mb-6 text-white">🕒 LogPose</div>
-      <nav className="space-y-2">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/signin')
+  }
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'block px-4 py-2 rounded hover:bg-blue-100',
-                isActive ? 'bg-indigo-500 text-white' : 'text-white'
-              )}
-            >
-              {item.label}
-            </Link>
-          )
-        })}
-      </nav>
+  return (
+    <aside className="w-64 bg-gray-800 border-r min-h-screen p-4 shadow-sm flex flex-col justify-between">
+      {/* Top Section */}
+      <div>
+        <div className="text-2xl font-bold mb-6 text-white">🕒 LogPose</div>
+        <nav className="space-y-2">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  'cursor-pointer block px-4 py-2 rounded hover:bg-blue-100 hover:text-indigo-500 transition-colors',
+                  isActive ? 'bg-indigo-500 text-white' : 'text-white'
+                )}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
+        </nav>
+      </div>
+
+      {/* Bottom Section: Sign Out */}
+      <div className="mt-6">
+        {user && (
+          <button
+            onClick={handleSignOut}
+            className="cursor-pointer w-full text-left px-4 py-2 rounded text-red-400 hover:text-red-600 hover:bg-red-100 transition"
+          >
+            Sign Out
+          </button>
+        )}
+      </div>
     </aside>
   )
 }

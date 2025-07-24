@@ -1,0 +1,13 @@
+<svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer Circle -->
+  <circle cx="25" cy="25" r="16" stroke="#4F46E5" stroke-width="3" fill="none"/>
+
+  <!-- Needle -->
+  <polygon points="25,12 27.5,25 25,38 22.5,25" fill="#4F46E5"/>
+
+  <!-- Red North Pointer (inverted triangle) -->
+  <polygon points="25,6 29,12 21,12" fill="#EF4444"/>
+
+  <!-- Center Dot -->
+  <circle cx="25" cy="25" r="3" fill="#4F46E5"/>
+</svg>
