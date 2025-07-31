@@ -1,10 +1,12 @@
 'use client'
 
+import { useAuth } from '@/components/AuthProvider'
+import { createClient } from '@/lib/supabase/client'
+import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { cn } from '@/lib/utils'
-import { supabase } from '@/lib/supabaseClient'
-import { useAuth } from '@/app/(authenticated)/authContext'
+
+const supabase = createClient();
 
 export const Sidebar = () => {
   const pathname = usePathname()
@@ -21,7 +23,7 @@ export const Sidebar = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
-    router.push('/signin')
+    router.push('/login')
   }
 
   return (

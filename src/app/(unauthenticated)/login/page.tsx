@@ -2,20 +2,29 @@
 
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import SocialAuth from "../social-auth";
 import { login } from "./actions";
 
 const supabase = createClient();
 
 export default function Login() {
+  const params = useSearchParams();
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const code = params.get("error");
+    const desc = params.get("description");
+    if (code) {
+      setError(`${code}${desc ? `: ${decodeURIComponent(desc)}` : ""}`);
+    }
+  }, [params]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();

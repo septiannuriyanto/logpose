@@ -14,7 +14,7 @@ export default function HeroSection() {
       </p>
       <div className="flex flex-col sm:flex-row gap-4 w-full items-center align-middle justify-center">
         <button
-          onClick={() => router.push('/signin')}
+          onClick={() => router.push('/login')}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md text-lg font-medium transition w-full md:w-fit"
         >
           Get Started

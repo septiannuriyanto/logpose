@@ -1,16 +1,16 @@
-
 'use client';
+
+import { useAuth } from "@/components/AuthProvider";
 import { getUserAchievements } from "@/lib/achievement-utils";
 import { mockStats } from "@/lib/mock-stats";
-import React from "react";
-import { useAuth } from "../authContext";
-
 
 const userAchievements = getUserAchievements(mockStats);
 
 export default function DashboardPage() {
   const { profile } = useAuth();
-  const displayName = profile?.first_name || "there";
+  const displayName = profile?.full_name;
+  console.log('>>>> ', displayName)
+  
   return (
       <div className="p-6 space-y-6">
       {/* Welcome Pane with Rank Achievement */}
