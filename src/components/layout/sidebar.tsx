@@ -15,9 +15,7 @@ export const Sidebar = () => {
 
   const navItems = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Schedule', href: '/schedule' },
-    { label: 'Teams', href: '/teams' },
-    { label: 'Reports', href: '/reports' },
+    { label: 'Projects', href: '/projects' },
     { label: 'Settings', href: '/settings' },
   ]
 
