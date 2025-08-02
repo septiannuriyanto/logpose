@@ -105,7 +105,7 @@ export default function ProjectDetailPage() {
     if (userIds.length > 0) {
       const { data: profilesData, error: profileErr } = await supabase
         .from("profiles")
-        .select("id, email, full_name")
+        .select("id, email, full_name, image_url")
         .in("id", userIds);
       console.log("[DEBUG] profiles:", profilesData, profileErr);
 
@@ -114,6 +114,7 @@ export default function ProjectDetailPage() {
         if (p) {
           m.email = p.email;
           m.full_name = p.full_name;
+          m.image_url = p.image_url || "";
         }
       });
 
