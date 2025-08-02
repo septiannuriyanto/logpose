@@ -29,6 +29,35 @@ export default function CreateProjectModal({ open, onClose, onCreated }: CreateP
 const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modalRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  // ✅ Fokus pada input nama ketika modal dibuka
+  useEffect(() => {
+    if (open && nameRef.current) {
+      setTimeout(() => nameRef.current?.focus(), 50);
+    }
+  }, [open]);
+
+  // ✅ Tutup modal jika klik di luar konten
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    }
+    if (open) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open, onClose]);
+
+    // ✅ Tutup modal jika tekan ESC
+  useEffect(() => {
+    function handleEsc(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    if (open) document.addEventListener("keydown", handleEsc);
+    return () => document.removeEventListener("keydown", handleEsc);
+  }, [open, onClose]);
+
 
   // ✅ Reset semua state ketika modal ditutup
   useEffect(() => {
@@ -180,6 +209,7 @@ const fileInputRef = useRef<HTMLInputElement>(null);
         <div>
           <label className="block text-sm font-medium">Project Name</label>
           <input
+          ref={nameRef}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Example: Website Redesign"
