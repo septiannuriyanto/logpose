@@ -1,6 +1,7 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useRef, useState } from 'react'
+import ProjectSwitcher from './ui/projects/ProjectSwitcher'
 
 export default function Timer({
   projectId,
@@ -11,23 +12,24 @@ export default function Timer({
 }) {
   const supabase = createClient()
 
-  const [open, setOpen] = useState(false)
-  const [task, setTask] = useState('')
-  const [notes, setNotes] = useState('')
-  const [entryId, setEntryId] = useState<string | null>(null)
-  const [duration, setDuration] = useState(0)
-  const [startTime, setStartTime] = useState<number | null>(null)
-  const [paused, setPaused] = useState(true)
   const [, tick] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [entryId, setEntryId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [notes, setNotes] = useState('')
+  const [open, setOpen] = useState(false)
+  const [paused, setPaused] = useState(true)
+  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [startTime, setStartTime] = useState<number | null>(null)
+  const [task, setTask] = useState('')
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     async function loadActive() {
       const { data } = await supabase
         .from('timesheets')
-        .select('id, task_name, notes, duration, start_time, is_paused')
+        .select('id, project_id, task_name, notes, duration, start_time, is_paused')
         .eq('user_id', userId)
-        // .eq('project_id', projectId)
         .is('end_time', null)
         .is('is_active', true)
         .limit(1)
@@ -36,6 +38,7 @@ export default function Timer({
       if (data) {
         setEntryId(data.id)
         setTask(data.task_name)
+        setSelectedProjectId(data.project_id)
         setNotes(data.notes ?? '')
         setDuration(data.duration ?? 0)
         setPaused(data.is_paused ?? true)
@@ -58,6 +61,11 @@ export default function Timer({
       : duration
 
   const play = async () => {
+    if (!selectedProjectId) {
+      setError('Select project to start timer');
+      return
+    }
+
     const now = new Date()
     if (!entryId) {
       const { data, error } = await supabase
@@ -69,7 +77,7 @@ export default function Timer({
           start_time: now,
           is_paused: false,
           user_id: userId,
-          // project_id: projectId,
+          project_id: selectedProjectId,
         })
         .select('id')
         .single()
@@ -160,6 +168,12 @@ export default function Timer({
       {open && (
         <div className="bg-white border border-gray-200 rounded-lg shadow-md p-5 w-80 space-y-4">
           <h2 className="text-lg font-semibold text-gray-800">New Task</h2>
+
+          <ProjectSwitcher
+            userId={userId}
+            selectedProjectId={selectedProjectId}
+            onChange={setSelectedProjectId}
+          />
           <input
             type="text"
             placeholder="Task name"
@@ -173,6 +187,16 @@ export default function Timer({
             onChange={(e) => setNotes(e.target.value)}
             className="w-full text-base text-black placeholder-gray-400 border border-gray-300 rounded-md px-3 py-2 h-24 resize-none focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
           />
+
+          {error && (
+            <div
+              role="alert"
+              className="relative flex items-start bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md"
+            >
+              <span className="flex-1 text-sm">{error}</span>
+            </div>
+          )}
+
           <div className="flex justify-end space-x-3">
             <button
               onClick={reset}
@@ -182,7 +206,7 @@ export default function Timer({
             </button>
             <button
               onClick={play}
-              disabled={!task}
+              disabled={!task || !selectedProjectId}
               className="px-5 py-2 bg-green-600 hover:bg-green-700 text-white text-base rounded-md shadow transition disabled:opacity-50"
             >
               Start
@@ -195,6 +219,12 @@ export default function Timer({
       {entryId && (
         <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4 w-80 flex items-center justify-between space-x-3">
           <div className="flex-1">
+            <ProjectSwitcher
+              userId={userId}
+              selectedProjectId={selectedProjectId}
+              onChange={setSelectedProjectId}
+              disabled={true}
+            />
             <div className="font-medium text-base text-gray-900">{task}</div>
             <div className="text-sm text-gray-500">{display}</div>
           </div>
