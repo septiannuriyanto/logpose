@@ -1,8 +1,13 @@
+// pages/settings.tsx (atau sesuai foldermu)
+
+import ProfileSettings from "./profile/profile_settings";
+
 export default function SettingsPage() {
   return (
-    <main className="p-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
-      <p className="mt-2 text-gray-600 dark:text-gray-400">Customize your preferences and system configurations.</p>
+    <main className="p-6 space-y-6">
+
+      <ProfileSettings />
+      {/* nanti bisa tambah komponen settings lain di sini */}
     </main>
   );
 }
