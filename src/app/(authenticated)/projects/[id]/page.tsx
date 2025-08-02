@@ -130,7 +130,19 @@ export default function ProjectDetailPage() {
     console.log("[DEBUG] Final Active Members:", active);
     console.log("[DEBUG] Final Invitations:", invites);
 
-    setActiveMembers(active.filter((m) => m.user_id !== user?.id));
+    // Hilangkan project creator dari daftar member
+const filteredMembers = active.filter((m) => m.user_id !== proj?.project_creator);
+
+// Kalau user adalah member (bukan manager), tetap bisa lihat dirinya sendiri
+if (user?.id && user.id !== proj?.project_creator) {
+  setActiveMembers(filteredMembers);
+} else {
+  // Kalau user adalah manager, jangan tampilkan dirinya sendiri
+  setActiveMembers(filteredMembers.filter((m) => m.user_id !== user?.id));
+}
+
+
+    
     setInvitations(invites.filter((m) => m.user_id !== user?.id));
 
     setLoading(false);
