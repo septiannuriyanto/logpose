@@ -81,7 +81,7 @@ export default function ProfilePage() {
     }
   }
 
-  const signOut = async () => {    
+  const signOut = async () => {
     await supabase.auth.signOut()
     router.push('/login')
   }
@@ -91,28 +91,28 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto bg-white p-6 rounded-md shadow-md mt-8 space-y-4">
-      <h1 className="text-2xl font-semibold">My Profile</h1>
+    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-8 space-y-6">
+      <h1 className="text-3xl font-semibold text-black">My Profile</h1>
 
       {error && (
         <div
           role="alert"
-          className="relative flex items-start bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md"
+          className="flex items-start bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg"
         >
-          <span className="flex-1 text-sm">{error}</span>
+          <span className="text-base">{error}</span>
         </div>
       )}
 
       {success && (
         <div
           role="status"
-          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md"
+          className="bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded-lg"
         >
-          {success}
+          <span className="text-base">{success}</span>
         </div>
       )}
 
-      <div className="flex space-x-4">
+      <div className="flex space-x-6 items-center">
         {profile?.image_url && (
           <img
             src={profile.image_url}
@@ -121,14 +121,20 @@ export default function ProfilePage() {
           />
         )}
 
-        <div>
+        <div className="space-y-2">
           <div>
-            <strong>Email:</strong>
-            <div>{profile?.email}</div>
+            <span className="block font-semibold text-black text-base">
+              Email:
+            </span>
+            <div className="text-black">{profile?.email}</div>
           </div>
-          <div className="mt-2">
-            <strong>Member since:</strong>
-            <div>{new Date(profile!.created_at).toLocaleDateString()}</div>
+          <div>
+            <span className="block font-semibold text-black text-base">
+              Member since:
+            </span>
+            <div className="text-black">
+              {new Date(profile!.created_at).toLocaleDateString()}
+            </div>
           </div>
         </div>
       </div>
@@ -143,7 +149,10 @@ export default function ProfilePage() {
 
       <form onSubmit={update}>
         <div>
-          <label className="font-medium">Full Name</label>
+          <label className="block font-semibold text-black text-base">
+            Full Name:
+          </label>
+
           {editing ? (
             <input
               type="text"
@@ -158,7 +167,10 @@ export default function ProfilePage() {
         </div>
 
         <div>
-          <label className="font-medium">Bio</label>
+          <label className="block font-semibold text-black text-base">
+            Biography:
+          </label>
+
           {editing ? (
             <textarea
               value={bio}
@@ -218,7 +230,7 @@ export default function ProfilePage() {
           )}
         </div>
       </form>
-      
+
       <button
         onClick={signOut}
         className="mt-4 w-full text-center text-red-600 hover:text-red-800"

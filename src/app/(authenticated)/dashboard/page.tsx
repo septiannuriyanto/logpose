@@ -62,7 +62,7 @@ export default function DashboardPage() {
     const m = Math.floor((secs % 3600) / 60)
     const s = secs % 60;
     const parts = [];
-    
+
     if (h) parts.push(`${h}h`);
     if (m || h) parts.push(`${m}m`);
     parts.push(`${s}s`);
@@ -70,58 +70,70 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-semibold">Dashboard</h2>
+    <div className="p-6 space-y-6 max-w-3xl mx-auto bg-gray-50 min-h-screen">
+      <h2 className="text-3xl font-bold text-black mb-4">Dashboard</h2>
 
-      {activeProject && (
-        <div className="bg-white p-4 rounded shadow-md">
-          <h3 className="text-lg font-medium">Top Project This Month</h3>
-          <div className="mt-2 flex justify-between">
-            <span>{activeProject.project_name}</span>
-            <span className="font-semibold">{fmt(activeProject.total_seconds)}</span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {activeProject && (
+          <div className="bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
+            <h3 className="text-xl font-semibold text-black mb-1">Top Project This Month</h3>
+            <div className="flex items-center justify-between">
+              <span className="text-black">{activeProject.project_name}</span>
+              <span className="text-2xl font-bold text-green-600">
+                {fmt(activeProject.total_seconds)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        <div className="bg-white p-5 rounded-lg shadow hover:shadow-lg transition">
+          <h3 className="text-xl font-semibold text-black mb-1">This Month’s Total</h3>
+          <div className="flex items-baseline justify-between">
+            <p className="text-4xl font-bold text-blue-600">{fmt(monthTotal)}</p>
+            {/* Optionally insert sparkline bar chart */}
           </div>
         </div>
-      )}
-
-      <div className="bg-white p-4 rounded shadow-md">
-        <h3 className="text-lg font-medium">This Month’s Total</h3>
-        <p className="mt-2 text-2xl">{fmt(monthTotal)}</p>
       </div>
 
-      <div className="bg-white p-4 rounded shadow-md">
-        <h3 className="text-lg font-medium">Recent Timesheets (Last 30 Days)</h3>
+      <div className="bg-white p-5 rounded-lg shadow">
+        <h3 className="text-xl font-semibold text-black mb-2">Recent Timesheets (Last 30 Days)</h3>
         {recent.length === 0 ? (
-          <p className="mt-2 text-sm text-gray-500">No entries yet.</p>
+          <p className="text-sm text-black">No entries yet.</p>
         ) : (
-          <ul className="mt-2 divide-y">
+          <ul className="divide-y">
             {recent.map((t) => (
-              <li key={t.id} className="py-2 flex justify-between">
+              <li
+                key={t.id}
+                className="py-3 flex justify-between hover:bg-gray-50 p-2 rounded transition"
+              >
                 <div>
-                  <span className="font-medium">{t.task_name}</span>
-                  {t.project && ` · ${t.project.name}`}
-                  <div className="text-xs text-gray-500">
+                  <span className="text-black font-semibold">{t.task_name}</span>
+                  {t.project && (
+                    <span className="text-black"> · {t.project.name}</span>
+                  )}
+                  <div className="text-xs text-black mt-1">
                     {new Date(t.start_time).toLocaleDateString()}
                   </div>
                 </div>
-                <span>{fmt(t.duration)}</span>
+                <span className="text-black">{fmt(t.duration)}</span>
               </li>
             ))}
           </ul>
         )}
       </div>
 
-      <div className="flex space-x-4">
-        <Link href="/timesheets" className="text-green-600 hover:underline">
+      <div className="flex space-x-6 mt-4">
+        <Link href="/timesheets" className="text-green-600 hover:underline font-semibold">
           View full history
         </Link>
-        <Link href="/projects" className="text-blue-600 hover:underline">
+        <Link href="/projects" className="text-blue-600 hover:underline font-semibold">
           Manage projects
         </Link>
       </div>
 
       <Link
         href="/"
-        className="fixed bottom-6 right-6 w-14 h-14 bg-green-600 hover:bg-green-700 text-white text-3xl rounded-full shadow-lg flex items-center justify-center transition-colors duration-200"
+        className="fixed bottom-6 right-6 w-16 h-16 bg-green-600 hover:bg-green-700 text-white text-4xl rounded-full shadow-lg flex items-center justify-center transition-colors duration-200"
         aria-label="Start timer"
       >
         +
