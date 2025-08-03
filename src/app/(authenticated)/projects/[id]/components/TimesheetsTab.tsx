@@ -39,7 +39,7 @@ export default function TimesheetsTab({
       .from("timesheets")
       .select("*")
       .eq("project_id", projectId)
-      .order("timesheet_number", { ascending: false });
+      .order("start_time", { ascending: false });
 
     if (!tsData) {
       setTimesheets([]);

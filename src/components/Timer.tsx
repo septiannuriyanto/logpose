@@ -169,11 +169,18 @@ export default function Timer({
         <div className="bg-white border border-gray-200 rounded-lg shadow-md p-5 w-80 space-y-4">
           <h2 className="text-lg font-semibold text-gray-800">New Task</h2>
 
+          <label htmlFor="project-switcher" className="block uppercase text-m font-semibold tracking-wide text-gray-600">
+            Project
+          </label>
           <ProjectSwitcher
             userId={userId}
             selectedProjectId={selectedProjectId}
             onChange={setSelectedProjectId}
           />
+
+          <label htmlFor="project-task" className="block uppercase text-m font-semibold tracking-wide text-gray-600">
+            Task
+          </label>
           <input
             type="text"
             placeholder="Task name"
@@ -217,28 +224,34 @@ export default function Timer({
 
       {/* Timer Card */}
       {entryId && (
-        <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4 w-80 flex items-center justify-between space-x-3">
-          <div className="flex-1">
+        <div className="w-80 p-4 bg-white border border-gray-200 rounded-lg shadow-md flex flex-col overflow-hidden">
+          <div className="flex-1 space-y-2">
             <ProjectSwitcher
               userId={userId}
               selectedProjectId={selectedProjectId}
               onChange={setSelectedProjectId}
               disabled={true}
             />
-            <div className="font-medium text-base text-gray-900">{task}</div>
-            <div className="text-sm text-gray-500">{display}</div>
+
+            <div className="text-gray-900 font-medium text-lg text-left px-2">
+              {task}
+            </div>
+            <div className="text-gray-500 text-base text-left px-2">
+              {display}
+            </div>
           </div>
-          <div className="flex flex-col space-y-2">
+
+          <div className="mt-4 flex justify-center gap-4">
             {!paused ? (
-              <button onClick={pause} aria-label="Pause">
+              <button onClick={pause} aria-label="Pause" className="text-left">
                 <img src="/icons/pause.svg" alt="Pause" width={28} height={28} />
               </button>
             ) : (
-              <button onClick={play} aria-label="Resume">
+              <button onClick={play} aria-label="Resume" className="text-left">
                 <img src="/icons/play.svg" alt="Resume" width={28} height={28} />
               </button>
             )}
-            <button onClick={done} aria-label="Done">
+            <button onClick={done} aria-label="Done" className="text-left">
               <img src="/icons/done.svg" alt="Done" width={28} height={28} />
             </button>
           </div>
