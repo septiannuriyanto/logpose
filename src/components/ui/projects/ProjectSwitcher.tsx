@@ -67,6 +67,13 @@ export default function ProjectSwitcherCombobox({
     setQuery(proj?.name ?? '');
   };
 
+  const handleFocus = () => {
+    setSelected(null)
+    onChange('');
+    setQuery('');
+    btnRef.current?.click();
+  }
+
   return (
     <Combobox
       value={selected}
@@ -89,6 +96,7 @@ export default function ProjectSwitcherCombobox({
               onClick={(e) => {
                 btnRef.current?.click();
               }}
+              onFocus={handleFocus}
               autoComplete="off"
             />
             <ComboboxButton
