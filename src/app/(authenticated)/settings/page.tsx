@@ -1,13 +1,230 @@
-// pages/settings.tsx (atau sesuai foldermu)
+'use client'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-import ProfileSettings from "./profile/profile_settings";
+interface Profile {
+  id: string
+  full_name: string
+  email: string
+  image_url: string | null
+  banner_url: string | null
+  bio: string | null
+  created_at: string
+}
 
-export default function SettingsPage() {
+export default function ProfilePage() {
+  const supabase = createClient()
+  const router = useRouter()
+
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [fullName, setFullName] = useState('')
+  const [bio, setBio] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string>('')
+
+  useEffect(() => {
+    ; (async () => {
+      const {
+        data: { session },
+        error: sessionErr,
+      } = await supabase.auth.getSession()
+
+      if (sessionErr || !session || !session.user?.id) {
+        setError('You must be signed in to view your profile.')
+        return
+      }
+
+      const { data, error: profErr } = await supabase
+        .from('profiles')
+        .select(`
+          id,
+          full_name,
+          email,
+          bio,
+          image_url,
+          banner_url,
+          created_at
+        `)
+        .eq('id', session.user.id)
+        .maybeSingle()
+
+      if (profErr) {
+        setError(profErr.message)
+      } else if (data) {
+        setProfile(data)
+        setFullName(data.full_name)
+        setBio(data.bio ?? '')
+      }
+    })()
+  }, [supabase])
+
+  const update = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!profile) return
+
+    setError(null)
+    setSuccess('')
+
+    const { error: updErr } = await supabase
+      .from('profiles')
+      .update({ full_name: fullName.trim(), bio: bio.trim() || null })
+      .eq('id', profile.id)
+
+    if (updErr) {
+      setError(updErr.message)
+    } else {
+      setSuccess('Saved successfully.')
+      setEditing(false)
+      setProfile(prev => (prev ? { ...prev, full_name: fullName.trim(), bio: bio.trim() || null } : prev))
+    }
+  }
+
+  const signOut = async () => {    
+    await supabase.auth.signOut()
+    router.push('/login')
+  }
+
+  if (!profile && !error) {
+    return <div className="p-6">Loading…</div>
+  }
+
   return (
-    <main className="p-6 space-y-6">
+    <div className="max-w-lg mx-auto bg-white p-6 rounded-md shadow-md mt-8 space-y-4">
+      <h1 className="text-2xl font-semibold">My Profile</h1>
 
-      <ProfileSettings />
-      {/* nanti bisa tambah komponen settings lain di sini */}
-    </main>
-  );
+      {error && (
+        <div
+          role="alert"
+          className="relative flex items-start bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md"
+        >
+          <span className="flex-1 text-sm">{error}</span>
+        </div>
+      )}
+
+      {success && (
+        <div
+          role="status"
+          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md"
+        >
+          {success}
+        </div>
+      )}
+
+      <div className="flex space-x-4">
+        {profile?.image_url && (
+          <img
+            src={profile.image_url}
+            alt="Profile"
+            className="w-20 h-20 rounded-md object-cover border"
+          />
+        )}
+
+        <div>
+          <div>
+            <strong>Email:</strong>
+            <div>{profile?.email}</div>
+          </div>
+          <div className="mt-2">
+            <strong>Member since:</strong>
+            <div>{new Date(profile!.created_at).toLocaleDateString()}</div>
+          </div>
+        </div>
+      </div>
+
+      {profile?.banner_url && (
+        <img
+          src={profile.banner_url}
+          alt="Banner"
+          className="w-full h-36 rounded-md object-cover mt-4"
+        />
+      )}
+
+      <form onSubmit={update}>
+        <div>
+          <label className="font-medium">Full Name</label>
+          {editing ? (
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              className="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-green-500"
+            />
+          ) : (
+            <div className="mt-1 text-gray-700">{profile?.full_name || '—'}</div>
+          )}
+        </div>
+
+        <div>
+          <label className="font-medium">Bio</label>
+          {editing ? (
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-green-500"
+              rows={3}
+            />
+          ) : (
+            <div className="mt-1 text-gray-600">
+              {profile?.bio || <span className="italic">No bio set</span>}
+            </div>
+          )}
+        </div>
+
+        <div className="flex space-x-2 mt-4">
+          {editing && (
+            <>
+              <button
+                key="save-btn"
+                type="submit"
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
+                disabled={fullName.trim().length === 0}
+              >
+                Save
+              </button>
+
+              <button
+                key="cancel-btn"
+                type="button"
+                onClick={() => {
+                  setEditing(false);
+                  setFullName(profile?.full_name ?? '');
+                  setBio(profile?.bio ?? '');
+                  setError(null);
+                  setSuccess('');
+                }}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md"
+              >
+                Cancel
+              </button>
+            </>
+          )}
+
+          {!editing && (
+            <button
+              key="edit-btn"
+              type="button"
+              onClick={() => {
+                setEditing(true);
+                setError(null);
+                setSuccess('');
+              }}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+            >
+              Edit Profile
+            </button>
+          )}
+        </div>
+      </form>
+      
+      <button
+        onClick={signOut}
+        className="mt-4 w-full text-center text-red-600 hover:text-red-800"
+      >
+        Sign out
+      </button>
+    </div>
+  )
 }
