@@ -17,7 +17,7 @@ export default function CTASection() {
             I'm Ready to Jump in 
           </a>
           <a
-            href="/signin"
+            href="/login"
             className="border border-white text-white px-6 py-3 rounded-md hover:bg-white hover:text-indigo-600 transition w-full md:w-fit"
           >
             I'm Ready to Collaborate
