@@ -163,14 +163,6 @@ export default function DashboardPage() {
         </Link>
       </div>
 
-      {/* Floating Action Button */}
-      <Link
-        href="/"
-        className="fixed bottom-6 right-6 w-16 h-16 bg-green-600 hover:bg-green-700 text-white text-4xl rounded-full shadow-lg flex items-center justify-center transition"
-        aria-label="Start timer"
-      >
-        +
-      </Link>
     </div>
   )
 }
