@@ -91,50 +91,49 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md mt-8 space-y-6">
-      <h1 className="text-3xl font-semibold text-black">My Profile</h1>
+    <div className="max-w-lg mx-auto bg-white p-6 mt-10 rounded-xl shadow-sm space-y-8">
+      <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
 
       {error && (
         <div
           role="alert"
-          className="flex items-start bg-red-50 border border-red-300 text-red-800 px-4 py-3 rounded-lg"
+          className="flex items-start bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded-md"
         >
-          <span className="text-base">{error}</span>
+          <span className="text-sm">{error}</span>
         </div>
       )}
 
       {success && (
         <div
           role="status"
-          className="bg-green-50 border border-green-300 text-green-800 px-4 py-3 rounded-lg"
+          className="bg-green-50 border border-green-300 text-green-700 px-4 py-3 rounded-md"
         >
-          <span className="text-base">{success}</span>
+          <span className="text-sm">{success}</span>
         </div>
       )}
 
-      <div className="flex space-x-6 items-center">
+      <div className="flex items-center space-x-5">
         {profile?.image_url && (
           <img
             src={profile.image_url}
             alt="Profile"
-            className="w-20 h-20 rounded-md object-cover border"
+            className="w-20 h-20 rounded-lg object-cover border"
           />
         )}
-
         <div className="space-y-2">
           <div>
-            <span className="block font-semibold text-black text-base">
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
               Email:
-            </span>
-            <div className="text-black">{profile?.email}</div>
+            </label>
+            <p className="text-gray-800 text-sm">{profile?.email}</p>
           </div>
           <div>
-            <span className="block font-semibold text-black text-base">
+            <label className="block text-sm font-semibold text-gray-700 mb-1">
               Member since:
-            </span>
-            <div className="text-black">
+            </label>
+            <p className="text-gray-800 text-sm">
               {new Date(profile!.created_at).toLocaleDateString()}
-            </div>
+            </p>
           </div>
         </div>
       </div>
@@ -143,60 +142,57 @@ export default function ProfilePage() {
         <img
           src={profile.banner_url}
           alt="Banner"
-          className="w-full h-36 rounded-md object-cover mt-4"
+          className="w-full h-36 rounded-lg object-cover"
         />
       )}
 
-      <form onSubmit={update}>
+      <form onSubmit={update} className="space-y-4">
         <div>
-          <label className="block font-semibold text-black text-base">
-            Full Name:
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Full Name
           </label>
-
           {editing ? (
             <input
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               required
-              className="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-green-500"
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-800"
             />
           ) : (
-            <div className="mt-1 text-gray-700">{profile?.full_name || '—'}</div>
+            <p className="text-sm text-gray-800">{profile?.full_name || "—"}</p>
           )}
         </div>
 
         <div>
-          <label className="block font-semibold text-black text-base">
-            Biography:
+          <label className="block text-sm font-semibold text-gray-700 mb-1">
+            Biography
           </label>
-
           {editing ? (
             <textarea
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              className="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-green-500"
+              className="w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:outline-none text-gray-800"
               rows={3}
             />
           ) : (
-            <div className="mt-1 text-gray-600">
-              {profile?.bio || <span className="italic">No bio set</span>}
-            </div>
+            <p className="text-sm text-gray-700">
+              {profile?.bio || <span className="italic text-gray-400">No bio set</span>}
+            </p>
           )}
         </div>
 
-        <div className="flex space-x-2 mt-4">
-          {editing && (
+        <div className="flex gap-2">
+          {editing ? (
             <>
               <button
                 key="save-btn"
                 type="submit"
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md"
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm"
                 disabled={fullName.trim().length === 0}
               >
                 Save
               </button>
-
               <button
                 key="cancel-btn"
                 type="button"
@@ -207,14 +203,12 @@ export default function ProfilePage() {
                   setError(null);
                   setSuccess('');
                 }}
-                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md"
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm"
               >
                 Cancel
               </button>
             </>
-          )}
-
-          {!editing && (
+          ) : (
             <button
               key="edit-btn"
               type="button"
@@ -223,7 +217,7 @@ export default function ProfilePage() {
                 setError(null);
                 setSuccess('');
               }}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md text-sm"
             >
               Edit Profile
             </button>
@@ -233,7 +227,7 @@ export default function ProfilePage() {
 
       <button
         onClick={signOut}
-        className="mt-4 w-full text-center text-red-600 hover:text-red-800"
+        className="block w-full text-center text-red-600 hover:text-red-800 text-sm font-medium"
       >
         Sign out
       </button>

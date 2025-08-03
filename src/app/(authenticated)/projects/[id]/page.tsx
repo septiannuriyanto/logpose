@@ -1,9 +1,9 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Camera } from "lucide-react";
+import { useParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import MembersTab from "./components/MembersTab";
 import TimesheetsTab from "./components/TimesheetsTab";
 
@@ -50,24 +50,23 @@ export default function ProjectDetailPage() {
   if (!project) return <div className="p-4">Project not found.</div>;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
-      <div className="flex items-center gap-4 mb-6">
+    <div className="p-6 max-w-3xl mx-auto space-y-8">
+      {/* Project Header */}
+      <div className="flex items-center gap-5 mb-8">
         <div
-          className="relative w-16 h-16 rounded-full bg-indigo-200 flex items-center justify-center text-2xl font-bold text-white cursor-pointer overflow-hidden"
-          onMouseEnter={() => setHoverIcon(true)}
-          onMouseLeave={() => setHoverIcon(false)}
           onClick={() => fileInputRef.current?.click()}
+          className="relative w-16 h-16 rounded-full bg-indigo-200 flex items-center justify-center text-xl font-bold text-white cursor-pointer overflow-hidden group"
         >
           {project.icon_url ? (
-            <img src={project.icon_url} alt="Project Icon" className="w-full h-full object-cover" />
+            <img
+              src={project.icon_url}
+              alt={`${project.name} icon`}
+              className="w-full h-full object-cover"
+            />
           ) : (
-            <span>{project.name.charAt(0).toUpperCase()}</span>
+            <span>{project.name?.charAt(0).toUpperCase()}</span>
           )}
-          {hoverIcon && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <Camera className="w-6 h-6 text-white" />
-            </div>
-          )}
+
           <input
             ref={fileInputRef}
             type="file"
@@ -80,32 +79,45 @@ export default function ProjectDetailPage() {
               }
             }}
           />
+
+          {/* Hover overlay */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-80 bg-black/50 flex items-center justify-center transition-opacity">
+            <Camera className="w-6 h-6 text-white" aria-hidden />
+          </div>
         </div>
 
         <div>
-          <h1 className="text-2xl font-bold">{project.name}</h1>
-          <p className="text-gray-600 mt-1">{project.description || "No description"}</p>
-          <p className="text-sm text-gray-400 mt-2">
+          <h1 className="text-2xl font-semibold text-gray-900">{project.name}</h1>
+          <p className="text-gray-700 mt-1">{project.description || "No description"}</p>
+          <p className="text-sm text-gray-500 mt-2">
             Created at {new Date(project.created_at).toLocaleDateString()}
           </p>
         </div>
       </div>
 
-      <div className="flex gap-3 border-b">
-        <button
-          onClick={() => setActiveTab("members")}
-          className={`px-4 py-2 ${activeTab === "members" ? "border-b-2 border-indigo-500 font-semibold" : "text-gray-500"}`}
-        >
-          Members
-        </button>
-        <button
-          onClick={() => setActiveTab("timesheets")}
-          className={`px-4 py-2 ${activeTab === "timesheets" ? "border-b-2 border-indigo-500 font-semibold" : "text-gray-500"}`}
-        >
-          Timesheets
-        </button>
+      {/* Tabs */}
+      <div className="flex gap-6 border-b border-gray-200">
+        {(["members", "timesheets"] as const).map((tabKey) => {
+          const label = tabKey[0].toUpperCase() + tabKey.slice(1);
+          const active = activeTab === tabKey;
+          return (
+            <button
+              key={tabKey}
+              onClick={() => setActiveTab(tabKey)}
+              className={`
+            pb-2 text-base font-medium focus:outline-none
+            ${active
+                  ? "text-indigo-600 border-b-2 border-indigo-600"
+                  : "text-gray-600 hover:text-gray-700"}
+          `}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
+      {/* Tab Panels */}
       {activeTab === "members" && <MembersTab projectId={project.id} />}
       {activeTab === "timesheets" && (
         <TimesheetsTab

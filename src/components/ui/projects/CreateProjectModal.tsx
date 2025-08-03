@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Member {
   user_id: string;
@@ -26,7 +26,7 @@ export default function CreateProjectModal({ open, onClose, onCreated }: CreateP
   const [suggestions, setSuggestions] = useState<Member[]>([]);
   const [loading, setLoading] = useState(false);
   const [iconFile, setIconFile] = useState<File | null>(null);
-const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modalRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -49,7 +49,7 @@ const fileInputRef = useRef<HTMLInputElement>(null);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open, onClose]);
 
-    // ✅ Tutup modal jika tekan ESC
+  // ✅ Tutup modal jika tekan ESC
   useEffect(() => {
     function handleEsc(e: KeyboardEvent) {
       if (e.key === "Escape") onClose();
@@ -122,131 +122,148 @@ const fileInputRef = useRef<HTMLInputElement>(null);
   };
 
   const handleCreate = async () => {
-  if (!name.trim()) return;
-  setLoading(true);
+    if (!name.trim()) return;
+    setLoading(true);
 
-  // Buat project dulu
-  const { data: project, error } = await supabase
-    .from("projects")
-    .insert({
-      name,
-      description,
-      project_creator: user?.id,
-    })
-    .select()
-    .single();
+    // Buat project dulu
+    const { data: project, error } = await supabase
+      .from("projects")
+      .insert({
+        name,
+        description,
+        project_creator: user?.id,
+      })
+      .select()
+      .single();
 
-  if (error) {
-    setLoading(false);
-    alert("Error creating project");
-    return;
-  }
-
-  // ✅ Upload icon jika ada
-  if (iconFile) {
-    const ext = iconFile.type === "image/png" ? "png" : "jpg";
-    const filePath = `${project.id}/icon.${ext}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from("project-assets")
-      .upload(filePath, iconFile, { upsert: true });
-
-    if (!uploadError) {
-      const { data } = supabase.storage.from("project-assets").getPublicUrl(filePath);
-      await supabase.from("projects").update({ icon_url: data.publicUrl }).eq("id", project.id);
+    if (error) {
+      setLoading(false);
+      alert("Error creating project");
+      return;
     }
-  }
 
-  if (members.length > 0) {
-    await supabase.from("invites").insert(
-      members.map((m) => ({
-        project_id: project.id,
-        user_id: m.user_id,
-        invited_by: user?.id,
-        status: "pending",
-      }))
-    );
-  }
+    // ✅ Upload icon jika ada
+    if (iconFile) {
+      const ext = iconFile.type === "image/png" ? "png" : "jpg";
+      const filePath = `${project.id}/icon.${ext}`;
 
-  setLoading(false);
-  onClose();
-  if (onCreated) onCreated();
-};
+      const { error: uploadError } = await supabase.storage
+        .from("project-assets")
+        .upload(filePath, iconFile, { upsert: true });
+
+      if (!uploadError) {
+        const { data } = supabase.storage.from("project-assets").getPublicUrl(filePath);
+        await supabase.from("projects").update({ icon_url: data.publicUrl }).eq("id", project.id);
+      }
+    }
+
+    if (members.length > 0) {
+      await supabase.from("invites").insert(
+        members.map((m) => ({
+          project_id: project.id,
+          user_id: m.user_id,
+          invited_by: user?.id,
+          status: "pending",
+        }))
+      );
+    }
+
+    setLoading(false);
+    onClose();
+    if (onCreated) onCreated();
+  };
 
 
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl w-full max-w-md p-6 space-y-4" ref={modalRef}>
-        <h2 className="text-xl font-bold">Create New Project</h2>
-{/* Project Icon */}
-<div>
-  <label className="block text-sm font-medium">Project Icon</label>
-  <div
-    className="mt-1 w-16 h-16 rounded-full bg-indigo-200 flex items-center justify-center text-white text-lg font-bold cursor-pointer overflow-hidden relative"
-    onClick={() => fileInputRef.current?.click()}
-  >
-    {iconFile ? (
-      <img src={URL.createObjectURL(iconFile)} alt="Preview" className="w-full h-full object-cover" />
-    ) : (
-      <span>{name ? name.charAt(0).toUpperCase() : "+"}</span>
-    )}
-    <input
-      type="file"
-      ref={fileInputRef}
-      accept="image/*"
-      className="hidden"
-      onChange={(e) => {
-        const file = e.target.files?.[0];
-        if (file) setIconFile(file);
-      }}
-    />
-  </div>
-</div>
+      <div
+        ref={modalRef}
+        className="bg-white rounded-xl w-full max-w-md p-6 space-y-6 shadow-md"
+      >
+        <h2 className="text-2xl font-semibold text-gray-900">
+          Create New Project
+        </h2>
+
+        {/* Project Icon */}
+        <div>
+          <label className="block text-gray-800 font-semibold text-base mb-1">
+            Project Icon
+          </label>
+          <div
+            onClick={() => fileInputRef.current?.click()}
+            className="mt-1 w-16 h-16 rounded-full bg-indigo-200 flex items-center justify-center text-gray-800 text-xl font-bold cursor-pointer overflow-hidden"
+          >
+            {iconFile ? (
+              <img
+                src={URL.createObjectURL(iconFile)}
+                alt="Preview"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span>{name?.charAt(0).toUpperCase() || "+"}</span>
+            )}
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) setIconFile(file);
+              }}
+            />
+          </div>
+        </div>
 
         {/* Project Name */}
         <div>
-          <label className="block text-sm font-medium">Project Name</label>
+          <label className="block text-gray-800 font-semibold text-base mb-1">
+            Project Name
+          </label>
           <input
-          ref={nameRef}
+            ref={nameRef}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Example: Website Redesign"
-            className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
           />
         </div>
-        
 
         {/* Description */}
         <div>
-          <label className="block text-sm font-medium">Description</label>
+          <label className="block text-gray-800 font-semibold text-base mb-1">
+            Description
+          </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Optional"
-            className="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
+            rows={3}
           />
         </div>
 
         {/* Invite Members */}
         <div>
-          <label className="block text-sm font-medium">Invite Members</label>
+          <label className="block text-gray-800 font-semibold text-base mb-1">
+            Invite Members
+          </label>
           <div className="relative mt-1">
             <input
               value={inputEmail}
               onChange={(e) => setInputEmail(e.target.value)}
               placeholder="Type email to search..."
-              className="w-full px-3 py-2 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-500"
             />
-            {/* 🔽 Suggestions Dropdown */}
             {suggestions.length > 0 && (
               <ul className="absolute left-0 right-0 bg-white border rounded-lg mt-1 shadow-lg z-50 max-h-40 overflow-auto">
                 {suggestions.map((s) => (
                   <li
                     key={s.user_id}
                     onClick={() => addMember(s)}
-                    className="px-3 py-2 hover:bg-indigo-50 cursor-pointer"
+                    className="px-3 py-2 hover:bg-indigo-50 cursor-pointer text-gray-900"
                   >
                     {s.email}
                   </li>
@@ -254,19 +271,17 @@ const fileInputRef = useRef<HTMLInputElement>(null);
               </ul>
             )}
           </div>
-
-          {/* Selected Members */}
           {members.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
               {members.map((m) => (
                 <span
                   key={m.user_id}
-                  className="bg-gray-200 px-2 py-1 rounded-full flex items-center gap-1 text-sm"
+                  className="bg-gray-100 px-2 py-1 rounded-full flex items-center gap-1 text-sm text-gray-900"
                 >
                   {m.email}
                   <button
                     onClick={() => removeMember(m.user_id)}
-                    className="text-red-500 font-bold"
+                    className="text-red-600 font-semibold ml-1"
                   >
                     ×
                   </button>
@@ -277,20 +292,19 @@ const fileInputRef = useRef<HTMLInputElement>(null);
         </div>
 
         {/* Buttons */}
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-3 pt-2">
           <button
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+            className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold"
           >
             Cancel
           </button>
           <button
             onClick={handleCreate}
             disabled={loading}
-            className={`px-4 py-2 rounded-lg text-white ${
-              loading ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"
-            }`}
+            className={`px-4 py-2 rounded-lg text-white ${loading ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"
+              } font-semibold`}
           >
             {loading ? "Creating..." : "+ Create Project"}
           </button>

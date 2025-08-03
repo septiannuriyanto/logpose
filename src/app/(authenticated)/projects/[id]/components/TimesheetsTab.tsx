@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useEffect, useState } from "react";
 import CreateTimesheetModal from "./CreateTimeSheetModal";
 
 interface Timesheet {
@@ -72,14 +72,17 @@ export default function TimesheetsTab({
     fetchTimesheets();
   }, [projectId]);
 
-  const formatDuration = (minutes: number | null, ongoing: boolean, notStarted: boolean) => {
-    if (notStarted) return "Not Started";
-    if (ongoing) return "Ongoing";
-    if (!minutes) return "0m";
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return h > 0 ? `${h}h ${m}m` : `${m}m`;
-  };
+  const formatDuration = (secs: number) => {
+    const h = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
+    const s = secs % 60;
+    const parts = [];
+
+    if (h) parts.push(`${h}h`);
+    if (m || h) parts.push(`${m}m`);
+    parts.push(`${s}s`);
+    return parts.join(' ');
+  }
 
   const getDurationColor = (minutes: number | null, ongoing: boolean, notStarted: boolean) => {
     if (notStarted) return "bg-gray-200 text-gray-600";
@@ -91,76 +94,64 @@ export default function TimesheetsTab({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <div className="timesheet__header flex flex-row justify-between pb-2">
-        <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-          Timesheets <span className="text-gray-400">({timesheets.length})</span>
+    <div className="bg-white rounded-lg shadow p-6 space-y-6">
+      <div className="flex justify-between items-center border-b pb-3">
+        <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+          Timesheets
+          <span className="text-gray-500">({timesheets.length})</span>
         </h2>
-        <button
-          onClick={() => setShowModal(true)}
-          className="px-3 py-1 rounded bg-indigo-600 text-white"
-        >
-          + New Timesheet
-        </button>
+        {/* Optional: <button className="px-3 py-1 bg-indigo-600 text-white rounded-md">+ New</button> */}
       </div>
 
       {timesheets.length === 0 ? (
         <p className="text-gray-500 text-sm">No timesheets found</p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-4">
           {timesheets.map((t) => {
-            const notStarted = !t.start_time; // ✅ cek apakah belum mulai
+            const notStarted = !t.start_time;
             const ongoing = !notStarted && !t.end_time;
-
             return (
               <li
                 key={t.id}
-                className="p-4 rounded-lg border border-gray-100 bg-gray-50 hover:bg-gray-100 transition"
+                className="flex justify-between items-start p-4 bg-gray-50 border border-gray-100 rounded-lg hover:bg-gray-100 transition"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-indigo-200 flex items-center justify-center overflow-hidden">
-                      {projectIcon ? (
-                        <img src={projectIcon} alt="Project Icon" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-white font-bold">{projectName.charAt(0)}</span>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-indigo-500">#{t.timesheet_number}</p>
-                      <p className="font-semibold text-gray-900">{t.task_name}</p>
-                      <p className="text-xs text-indigo-600 font-medium">{projectName}</p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Taken by <span className="font-medium text-gray-700">{t.taken_by}</span>
-                      </p>
-
-                      {/* ✅ Jika belum mulai, tampilkan pesan */}
-                      {notStarted ? (
-                        <p className="text-xs text-red-500 mt-2">
-                          Pekerjaan Timesheet ini belum dimulai
-                        </p>
-                      ) : (
-                        <p className="text-xs text-gray-500 mt-1">
-                          {new Date(t.start_time!).toLocaleString()} –{" "}
-                          {t.end_time ? new Date(t.end_time).toLocaleString() : "Ongoing"}
-                        </p>
-                      )}
-
-                      {t.notes && (
-                        <p className="text-xs text-gray-400 mt-1 italic">“{t.notes}”</p>
-                      )}
-                    </div>
+                <div className="flex gap-4">
+                  <div className="w-12 h-12 rounded-full bg-indigo-200 flex items-center justify-center overflow-hidden">
+                    {projectIcon ? (
+                      <img src={projectIcon} alt="Project Icon" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-white font-bold text-lg">{projectName.charAt(0)}</span>
+                    )}
                   </div>
-                  <span
-                    className={`ml-3 px-3 py-1 rounded-full text-xs font-semibold self-start shadow-sm ${getDurationColor(
-                      t.duration,
-                      ongoing,
-                      notStarted
-                    )}`}
-                  >
-                    {formatDuration(t.duration, ongoing, notStarted)}
-                  </span>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-indigo-600">#{t.timesheet_number}</p>
+                    <p className="text-md font-semibold text-gray-900">{t.task_name}</p>
+                    <p className="text-sm font-medium text-indigo-600">{projectName}</p>
+                    <p className="text-xs text-gray-600">
+                      Taken by <span className="font-medium text-gray-700">{t.taken_by}</span>
+                    </p>
+                    {notStarted ? (
+                      <p className="text-xs text-red-500 mt-2">This timesheet hasn’t started yet</p>
+                    ) : (
+                      <p className="text-xs text-gray-600 mt-1">
+                        {new Date(t.start_time!).toLocaleString()} –{" "}
+                        {t.end_time ? new Date(t.end_time).toLocaleString() : "Ongoing"}
+                      </p>
+                    )}
+                    {t.notes && (
+                      <p className="text-xs italic text-gray-500 mt-1">“{t.notes}”</p>
+                    )}
+                  </div>
                 </div>
+                <span
+                  className={`ml-4 px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${getDurationColor(
+                    t.duration,
+                    ongoing,
+                    notStarted
+                  )}`}
+                >
+                  {formatDuration(t.duration ?? 0)}
+                </span>
               </li>
             );
           })}

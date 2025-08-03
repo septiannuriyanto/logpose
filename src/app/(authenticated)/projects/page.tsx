@@ -1,17 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import CreateProjectModal from "@/components/ui/projects/CreateProjectModal";
 import { useAuth } from "@/components/AuthProvider";
+import CreateProjectModal from "@/components/ui/projects/CreateProjectModal";
 import { createClient } from "@/lib/supabase/client";
 import {
+  Briefcase,
   ClipboardList,
   Crown,
-  Briefcase,
   FolderKanban,
   Mail,
 } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface Project {
   id: string;
@@ -84,35 +84,35 @@ export default function ProjectsPage() {
     }
   };
 
-const handleAccept = async (invite: Invite) => {
-  const confirmAccept = window.confirm(
-    `Are you sure you want to accept the invitation to join "${invite.project_name}"?`
-  );
-  if (!confirmAccept) return;
+  const handleAccept = async (invite: Invite) => {
+    const confirmAccept = window.confirm(
+      `Are you sure you want to accept the invitation to join "${invite.project_name}"?`
+    );
+    if (!confirmAccept) return;
 
-  await supabase.from("project_members").insert({
-    project_id: invite.project_id,
-    user_id: user?.id,
-    role: "member",
-  });
-  await supabase.from("invites").delete().eq("id", invite.invite_id);
-  fetchProjects();
-  fetchInvites();
-};
+    await supabase.from("project_members").insert({
+      project_id: invite.project_id,
+      user_id: user?.id,
+      role: "member",
+    });
+    await supabase.from("invites").delete().eq("id", invite.invite_id);
+    fetchProjects();
+    fetchInvites();
+  };
 
-const handleReject = async (invite: Invite) => {
-  const confirmReject = window.confirm(
-    `Are you sure you want to reject the invitation to "${invite.project_name}"?`
-  );
-  if (!confirmReject) return;
+  const handleReject = async (invite: Invite) => {
+    const confirmReject = window.confirm(
+      `Are you sure you want to reject the invitation to "${invite.project_name}"?`
+    );
+    if (!confirmReject) return;
 
-  await supabase
-    .from("invites")
-    .update({ status: "rejected" })
-    .eq("id", invite.invite_id);
+    await supabase
+      .from("invites")
+      .update({ status: "rejected" })
+      .eq("id", invite.invite_id);
 
-  fetchInvites();
-};
+    fetchInvites();
+  };
 
 
 
@@ -134,88 +134,68 @@ const handleReject = async (invite: Invite) => {
   const totalAll = projects.length;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 max-w-4xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Projects</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-semibold text-gray-900">
+          Projects
+        </h1>
         <button
           onClick={() => setOpenModal(true)}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+          className="px-4 py-2 rounded-lg bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition"
         >
           + Create Project
         </button>
       </div>
 
-      {/* Filter Buttons */}
-      <div className="flex gap-3 mt-4">
-        <button
-          onClick={() => setFilter("all")}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-            filter === "all"
-              ? "bg-indigo-100 text-indigo-700 border-indigo-300"
-              : "bg-white text-gray-600 border-gray-200"
-          }`}
-        >
-          <ClipboardList className="w-4 h-4" />
-          <span>All ({totalAll})</span>
-        </button>
-        <button
-          onClick={() => setFilter("manager")}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-            filter === "manager"
-              ? "bg-green-100 text-green-700 border-green-300"
-              : "bg-white text-gray-600 border-gray-200"
-          }`}
-        >
-          <Crown className="w-4 h-4" />
-          <span>Managed ({totalManager})</span>
-        </button>
-        <button
-          onClick={() => setFilter("member")}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-            filter === "member"
-              ? "bg-blue-100 text-blue-700 border-blue-300"
-              : "bg-white text-gray-600 border-gray-200"
-          }`}
-        >
-          <Briefcase className="w-4 h-4" />
-          <span>Working ({totalMember})</span>
-        </button>
-        <button
-          onClick={() => setFilter("invites")}
-          className={`flex items-center gap-2 px-3 py-2 rounded-lg border relative ${
-            filter === "invites"
-              ? "bg-yellow-100 text-yellow-700 border-yellow-300"
-              : "bg-white text-gray-600 border-gray-200"
-          }`}
-        >
-          <Mail className="w-4 h-4" />
-          <span>Invitations</span>
-          {invites.length > 0 && (
-            <span className="ml-2 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
-              {invites.length}
-            </span>
-          )}
-        </button>
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3">
+        {[
+          { key: "all", label: "All", icon: <ClipboardList className="w-4 h-4" />, count: totalAll, style: "indigo" },
+          { key: "manager", label: "Managed", icon: <Crown className="w-4 h-4" />, count: totalManager, style: "green" },
+          { key: "member", label: "Working", icon: <Briefcase className="w-4 h-4" />, count: totalMember, style: "blue" },
+          { key: "invites", label: "Invitations", icon: <Mail className="w-4 h-4" />, count: invites.length, style: "yellow" },
+        ].map(({ key, label, icon, count, style }) => {
+          const active = filter === key;
+          return (
+            <button
+              key={key}
+              onClick={() => setFilter(key as FilterType)}
+              className={`
+            flex items-center gap-2 px-4 py-2 rounded-lg border
+            ${active
+                  ? `bg-${style}-100 border-${style}-300 text-${style}-700 font-semibold`
+                  : `bg-white text-gray-600 border-gray-200 hover:text-gray-700`}
+            ${key === "invites" && count > 0 ? "" : ""}
+          `}
+            >
+              {icon}
+              <span>
+                {label}
+                {typeof count === "number" && !isNaN(count) ? ` (${count})` : ""}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Content */}
+      {/* Invites Section */}
       {filter === "invites" ? (
         invites.length === 0 ? (
-          <div className="text-gray-500 mt-6">No pending invitations.</div>
+          <p className="text-gray-600 mt-6">No pending invitations.</p>
         ) : (
-          <div className="mt-6 space-y-3">
+          <div className="mt-6 space-y-4">
             {invites.map((invite) => (
               <div
                 key={invite.invite_id}
-                className="p-4 bg-white shadow rounded-lg flex justify-between items-center"
+                className="flex items-center justify-between p-4 bg-white rounded-lg shadow hover:shadow-md transition"
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full bg-indigo-200 flex items-center justify-center overflow-hidden">
                     {invite.project_icon ? (
                       <img
                         src={invite.project_icon}
-                        alt="Project Icon"
+                        alt={`${invite.project_name} icon`}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -225,17 +205,16 @@ const handleReject = async (invite: Invite) => {
                     )}
                   </div>
                   <div>
-                    <p className="font-medium">
+                    <p className="text-gray-900 font-semibold">
                       {invite.project_name || "Unnamed Project"}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-gray-600 text-sm">
                       Invited by {invite.inviter_email || "Unknown"}
                     </p>
-                    <p className="text-xs text-gray-400">
-                      Invited at{" "}
+                    <p className="text-gray-500 text-xs mt-0.5">
                       {new Date(invite.created_at).toLocaleDateString()}
                     </p>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-gray-600 text-xs mt-0.5">
                       Status: {invite.status}
                     </p>
                   </div>
@@ -243,13 +222,13 @@ const handleReject = async (invite: Invite) => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleAccept(invite)}
-                    className="bg-white border border-green-500 text-green-500 px-3 py-1 rounded hover:bg-green-300 hover:text-white transition-all duration-300"
+                    className="px-3 py-1 bg-white border border-green-500 text-green-500 rounded hover:bg-green-500 hover:text-white transition"
                   >
                     Accept
                   </button>
                   <button
                     onClick={() => handleReject(invite)}
-                    className="bg-white border border-red-500 text-red-500 px-3 py-1 rounded hover:bg-red-300 hover:text-white transition-all duration-300"
+                    className="px-3 py-1 bg-white border border-red-500 text-red-500 rounded hover:bg-red-500 hover:text-white transition"
                   >
                     Reject
                   </button>
@@ -259,55 +238,56 @@ const handleReject = async (invite: Invite) => {
           </div>
         )
       ) : loading ? (
-        <p className="text-gray-500 mt-6">Loading projects...</p>
+        <p className="text-gray-600 mt-6">Loading projects…</p>
       ) : filteredProjects.length === 0 ? (
-        <div className="text-gray-500 mt-6">No projects to show.</div>
+        <p className="text-gray-600 mt-6">No projects to show.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
           {filteredProjects.map((project) => (
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="block bg-white shadow rounded-lg p-4 hover:shadow-md transition"
+              className="block bg-white rounded-lg shadow p-4 hover:shadow-lg transition"
             >
-              <div className="flex items-center gap-3 mb-3">
-                {project.icon_url ? (
-                  <img
-                    src={project.icon_url}
-                    alt={project.name}
-                    className="w-10 h-10 rounded bg-gray-100 object-cover"
-                  />
-                ) : (
-                  <div className="w-10 h-10 rounded bg-gray-100 flex items-center justify-center">
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
+                  {project.icon_url ? (
+                    <img
+                      src={project.icon_url}
+                      alt={`${project.name} icon`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
                     <FolderKanban className="w-6 h-6 text-gray-500" />
-                  </div>
-                )}
+                  )}
+                </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
-                    <h2 className="text-lg font-bold">{project.name}</h2>
-                    <span className="text-xs text-gray-500">
-                      {project.member_count} members
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {project.name}
+                    </h2>
+                    <span className="text-gray-500 text-sm">
+                      {project.member_count} member{project.member_count !== 1 && 's'}
                     </span>
                   </div>
                   {project.description && (
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                    <p className="text-gray-600 text-sm mt-1 line-clamp-2">
                       {project.description}
                     </p>
                   )}
                 </div>
               </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Created {new Date(project.created_at).toLocaleDateString()}
+              <p className="text-gray-500 text-xs">
+                Created on {new Date(project.created_at).toLocaleDateString()}
               </p>
-              <p
-                className={`text-xs mt-1 px-2 py-0.5 inline-block rounded ${
-                  project.role === "manager"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-blue-100 text-blue-700"
-                }`}
+              <span
+                className={`inline-block px-2 py-0.5 mt-2 text-xs font-medium rounded ${project.role === "manager"
+                    ? "bg-green-50 text-green-700"
+                    : "bg-blue-50 text-blue-700"
+                  }`}
               >
                 {project.role}
-              </p>
+              </span>
             </Link>
           ))}
         </div>
