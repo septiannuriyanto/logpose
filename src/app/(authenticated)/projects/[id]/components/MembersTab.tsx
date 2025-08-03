@@ -4,16 +4,18 @@ import { useAuth } from "@/components/AuthProvider";
 import { createClient } from "@/lib/supabase/client";
 import { useEffect, useState } from "react";
 
-interface Member {
-  user_id: string;
-  email: string;
-  role: string;
-  full_name?: string;
-  image_url?: string;
-}
-
 interface MembersTabProps {
   projectId: string;
+}
+
+type Member = {
+  project_id: string;
+  role: string;
+  joined_at: string;
+  id: string;
+  full_name: string;
+  email: string;
+  image_url: string | null;
 }
 
 export default function MembersTab({ projectId }: MembersTabProps) {
@@ -23,37 +25,25 @@ export default function MembersTab({ projectId }: MembersTabProps) {
 
   useEffect(() => {
     const fetchMembers = async () => {
-      const { data: memberData } = await supabase
-        .from("project_members")
-        .select("user_id, role")
-        .eq("project_id", projectId);
+      const { data, error } = await supabase.rpc('get_project_members', {
+        project_id_arg: projectId
+      });
+      console.log(data)
 
-      const active: Member[] =
-        memberData?.map((m) => ({
-          user_id: m.user_id,
-          email: "",
-          full_name: "",
-          role: m.role,
-        })) || [];
-
-      const userIds = active.map((m) => m.user_id);
-      if (userIds.length > 0) {
-        const { data: profilesData } = await supabase
-          .from("profiles")
-          .select("id, email, full_name, image_url")
-          .in("id", userIds);
-
-        active.forEach((m) => {
-          const p = profilesData?.find((x) => x.id === m.user_id);
-          if (p) {
-            m.email = p.email;
-            m.full_name = p.full_name;
-            m.image_url = p.image_url;
-          }
-        });
+      if (error) {
+        console.error('RPC error:', error);
+        return;
       }
 
-      setActiveMembers(active.filter((m) => m.user_id !== user?.id));
+      const active: Member[] = (data ?? []).map((m: Member) => ({
+        user_id: m.id,
+        email: m.email,
+        full_name: m.full_name,
+        image_url: m.image_url,
+        role: m.role
+      }));
+
+      setActiveMembers(active);
     };
 
     fetchMembers();
@@ -72,9 +62,9 @@ export default function MembersTab({ projectId }: MembersTabProps) {
         <p className="text-gray-500 text-sm">No active members</p>
       ) : (
         <ul className="divide-y divide-gray-100">
-          {activeMembers.map((m) => (
+          {activeMembers.map((m: Member) => (
             <li
-              key={m.user_id || m.email}
+              key={m.id || m.email}
               className="py-3 flex items-center justify-between hover:bg-gray-50 transition"
             >
               <div className="flex items-center space-x-4">
@@ -99,16 +89,11 @@ export default function MembersTab({ projectId }: MembersTabProps) {
                   <p className="text-gray-600 text-sm leading-tight">{m.email}</p>
                 </div>
               </div>
-              <span
-                className={`
-              text-sm font-medium px-3 py-1 rounded-full
-              ${m.role === 'admin' || m.role === 'owner'
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'bg-green-50 text-green-700'}
-            `}
-              >
-                {m.role}
-              </span>
+              {m.role === 'manager' && (
+                <span className="text-sm font-medium px-3 py-1 rounded-full bg-indigo-50 text-indigo-700">
+                  {m.role}
+                </span>
+              )}
             </li>
           ))}
         </ul>
