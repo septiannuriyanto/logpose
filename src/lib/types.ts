@@ -1,12 +1,15 @@
 export type Project = { id: string; name: string; created_at: string }
 
-export type TimeEntry = {
-  id: string
-  user_id: string
-  project_id: string
+export type Timesheet = {
+  id: number
   task_name: string
-  project_name?: string
-  start_time: string
-  end_time: string
   duration: number
+  project: { name: string } | null
+  start_time: string
+}
+
+export type ProjectSummary = {
+  project_id: string
+  project_name: string
+  total_seconds: number
 }

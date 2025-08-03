@@ -1,113 +1,131 @@
-'use client';
+'use client'
+import { Database } from '@/lib/database.types'
+import { createClient } from '@/lib/supabase/client'
+import { ProjectSummary, Timesheet } from '@/lib/types'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
-import { useAuth } from "@/components/AuthProvider";
-import { getUserAchievements } from "@/lib/achievement-utils";
-import { mockStats } from "@/lib/mock-stats";
-
-const userAchievements = getUserAchievements(mockStats);
+type TopProject = Database['public']['Functions']['top_project_by_user']['Returns'][0]
 
 export default function DashboardPage() {
-  const { profile } = useAuth();
-  const displayName = profile?.full_name;
-  console.log('>>>> ', displayName)
-  
+  const supabase = createClient()
+  const [activeProject, setActiveProject] = useState<ProjectSummary | null>(null)
+  const [recent, setRecent] = useState<Timesheet[]>([])
+  const [monthTotal, setMonthTotal] = useState<number>(0)
+
+  useEffect(() => {
+    async function loadDashboard() {
+      const session = await supabase.auth.getSession()
+      const uid = session.data.session?.user?.id
+      if (!uid) return
+
+      const now = new Date()
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+
+      // Monthly total
+      const { data: totData } = await supabase
+        .rpc('monthly_total_by_user', { uid, month_start: monthStart })
+        .select('total_duration')
+        .maybeSingle()
+      setMonthTotal(totData?.total_duration ?? 0)
+
+      // Recent entries from past month
+      const { data: recentData } = await supabase
+        .from('timesheets')
+        .select('id, task_name, duration, start_time, project:projects(name)')
+        .gte('start_time', monthStart)
+        .eq('user_id', uid)
+        .order('start_time', { ascending: false })
+        .limit(5)
+      setRecent(recentData ?? [])
+
+      // Top project
+      const { data: projData } = await supabase
+        .rpc('top_project_by_user', { uid, month_start: monthStart })
+        .maybeSingle()
+
+      const typedProj = projData as TopProject | null
+
+      if (projData && typedProj?.project_id) {
+        setActiveProject({
+          project_id: typedProj.project_id,
+          project_name: typedProj.name,
+          total_seconds: Number(typedProj.total_duration),
+        })
+      }
+    }
+    loadDashboard()
+  }, [supabase])
+
+  const fmt = (secs: number) => {
+    const h = Math.floor(secs / 3600)
+    const m = Math.floor((secs % 3600) / 60)
+    const s = secs % 60;
+    const parts = [];
+    
+    if (h) parts.push(`${h}h`);
+    if (m || h) parts.push(`${m}m`);
+    parts.push(`${s}s`);
+    return parts.join(' ');
+  }
+
   return (
-      <div className="p-6 space-y-6">
-      {/* Welcome Pane with Rank Achievement */}
-      <div className="bg-white rounded-2xl shadow p-6">
-        <h1 className="text-2xl font-bold mb-2">Hello, {displayName} 👋</h1>
-        <p className="text-gray-600 mb-4">Great work last month! Here's how you performed:</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-teal-50 border-l-4 border-teal-500 p-4 rounded-xl">
-            <p className="text-sm text-teal-700">🏆 Monthly Achievement</p>
-            <h2 className="text-lg font-bold">#2 in Team</h2>
-            <p className="text-sm text-gray-600">Logged 72h total last month</p>
-          </div>
-          <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-xl">
-            <p className="text-sm text-indigo-700">⭐ Weekly Rank</p>
-            <h2 className="text-lg font-bold">#3 in Team</h2>
-            <p className="text-sm text-gray-600">18h 30m this week</p>
+    <div className="p-6 space-y-6">
+      <h2 className="text-2xl font-semibold">Dashboard</h2>
+
+      {activeProject && (
+        <div className="bg-white p-4 rounded shadow-md">
+          <h3 className="text-lg font-medium">Top Project This Month</h3>
+          <div className="mt-2 flex justify-between">
+            <span>{activeProject.project_name}</span>
+            <span className="font-semibold">{fmt(activeProject.total_seconds)}</span>
           </div>
         </div>
+      )}
+
+      <div className="bg-white p-4 rounded shadow-md">
+        <h3 className="text-lg font-medium">This Month’s Total</h3>
+        <p className="mt-2 text-2xl">{fmt(monthTotal)}</p>
       </div>
 
-      {/* Achievements Section */}
-      <div className="bg-white rounded-2xl shadow p-4">
-        <h2 className="text-lg font-semibold mb-2">Your Badges</h2>
-        <div className="flex flex-wrap gap-4">
-          {userAchievements.map((badge) => (
-            <div
-              key={badge.id}
-              className="bg-gray-100 rounded-xl px-4 py-2 text-sm flex items-center gap-2 shadow-sm"
-            >
-              <span className="text-xl">{badge.icon}</span>
-              <div>
-                <p className="font-medium">{badge.name}</p>
-                <p className="text-xs text-gray-500">{badge.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="bg-white p-4 rounded shadow-md">
+        <h3 className="text-lg font-medium">Recent Timesheets (Last 30 Days)</h3>
+        {recent.length === 0 ? (
+          <p className="mt-2 text-sm text-gray-500">No entries yet.</p>
+        ) : (
+          <ul className="mt-2 divide-y">
+            {recent.map((t) => (
+              <li key={t.id} className="py-2 flex justify-between">
+                <div>
+                  <span className="font-medium">{t.task_name}</span>
+                  {t.project && ` · ${t.project.name}`}
+                  <div className="text-xs text-gray-500">
+                    {new Date(t.start_time).toLocaleDateString()}
+                  </div>
+                </div>
+                <span>{fmt(t.duration)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl shadow p-4">
-          <h2 className="text-lg font-semibold">Time Today</h2>
-          <p className="text-2xl font-bold text-teal-600">3h 45m</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow p-4">
-          <h2 className="text-lg font-semibold">This Week</h2>
-          <p className="text-2xl font-bold text-teal-600">18h 30m</p>
-        </div>
-        <div className="bg-white rounded-2xl shadow p-4">
-          <h2 className="text-lg font-semibold">This Month</h2>
-          <p className="text-2xl font-bold text-teal-600">72h 10m</p>
-        </div>
+      <div className="flex space-x-4">
+        <Link href="/timesheets" className="text-green-600 hover:underline">
+          View full history
+        </Link>
+        <Link href="/projects" className="text-blue-600 hover:underline">
+          Manage projects
+        </Link>
       </div>
 
-      {/* Active Task */}
-      <div className="bg-white rounded-2xl shadow p-4 space-y-4">
-        <h2 className="text-lg font-semibold">Active Task</h2>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-md font-medium">Design Homepage UI</p>
-            <p className="text-sm text-gray-500">Tracking for 00:42:10</p>
-          </div>
-          <button className="bg-red-500 text-white rounded-xl px-4 py-2 hover:bg-red-600">
-            Stop Timer
-          </button>
-        </div>
-      </div>
-
-      {/* Task History Table */}
-      <div className="bg-white rounded-2xl shadow p-4">
-        <h2 className="text-lg font-semibold mb-4">Task History</h2>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-gray-600 border-b">
-              <th className="py-2">Date</th>
-              <th className="py-2">Task</th>
-              <th className="py-2">Duration</th>
-              <th className="py-2">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="py-2">2025-06-26</td>
-              <td className="py-2">Design Homepage UI</td>
-              <td className="py-2">2h 15m</td>
-              <td className="py-2 text-green-600">Completed</td>
-            </tr>
-            <tr>
-              <td className="py-2">2025-06-25</td>
-              <td className="py-2">Setup Auth System</td>
-              <td className="py-2">3h 10m</td>
-              <td className="py-2 text-green-600">Completed</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <Link
+        href="/"
+        className="fixed bottom-6 right-6 w-14 h-14 bg-green-600 hover:bg-green-700 text-white text-3xl rounded-full shadow-lg flex items-center justify-center transition-colors duration-200"
+        aria-label="Start timer"
+      >
+        +
+      </Link>
     </div>
-  );
+  )
 }
