@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 type TopProject = Database['public']['Functions']['top_project_by_user']['Returns'][0]
+type RecentRaw = Database['public']['Tables']['timesheets']['Row'] & { project: { name: string }[] }
 
 export default function DashboardPage() {
   const supabase = createClient()
@@ -30,7 +31,7 @@ export default function DashboardPage() {
       setMonthTotal(totData?.total_duration ?? 0)
 
       // Recent entries from past month
-      const { data: recentData } = await supabase
+      const result = await supabase
         .from('timesheets')
         .select('id, task_name, duration, start_time, project:projects(name)')
         .gte('start_time', monthStart)
@@ -38,8 +39,13 @@ export default function DashboardPage() {
         .order('start_time', { ascending: false })
         .limit(5)
 
-      console.log(recentData)
-      setRecent(recentData ?? [])
+      if (result.data) {
+        const flat = result.data.map(d => ({
+          ...(d as RecentRaw),
+          project: (d.project as any)[0] as { name: string }  // type-cast array[0] into object
+        })) as Timesheet[]
+        setRecent(flat)
+      }
 
       // Top project
       const { data: projData } = await supabase
