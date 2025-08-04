@@ -1,17 +1,18 @@
 "use client";
 
+import MembersTab from "@/components/ui/projects/MembersTab";
+import TimesheetsTab from "@/components/ui/projects/TimesheetsTab";
 import { createClient } from "@/lib/supabase/client";
 import { Camera } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import MembersTab from "./components/MembersTab";
-import TimesheetsTab from "./components/TimesheetsTab";
 
 interface Project {
   id: string;
   name: string;
   description: string;
   created_at: string;
+  project_creator: string;
   icon_url?: string | null;
 }
 
@@ -118,7 +119,7 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Tab Panels */}
-      {activeTab === "members" && <MembersTab projectId={project.id} />}
+      {activeTab === "members" && <MembersTab projectId={project.id} creatorId={project.project_creator} />}
       {activeTab === "timesheets" && (
         <TimesheetsTab
           projectId={project.id}

@@ -1,6 +1,6 @@
 import AuthProvider from '@/components/AuthProvider';
 import { Sidebar } from '@/components/layout/sidebar';
-import Timer from '@/components/Timer';
+import Timer from '@/components/ui/timer/Timer';
 import { getUser } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import React from 'react';
