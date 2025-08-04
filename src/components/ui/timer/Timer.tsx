@@ -1,7 +1,7 @@
 'use client'
 import { createClient } from '@/lib/supabase/client'
 import { useEffect, useRef, useState } from 'react'
-import ProjectSwitcher from './ui/projects/ProjectSwitcher'
+import ProjectSwitcher from '../projects/ProjectSwitcher'
 
 export default function Timer({
   projectId,
